@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Calculadora Qué Tal Que</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,800&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+/* VOICE: amigo que sabe de dinero; directo, con humor, sin vender.
+   IDEA: la lámina de Qué Tal Que hecha herramienta.
+   PICTURE: el número de meses, gigante sobre marcatextos, y la barra de 0 a 6+.
+   COLOUR and TYPE: identidad fija del proyecto (tinta, papel, rosa, marcatextos); Bricolage 800 + DM Sans.
+   LAYOUT: una columna móvil de 440px máx.; una pantalla a la vez. */
+:root{color-scheme:light;--tinta:#15121A;--papel:#F6F0E4;--rosa:#D4006A;--marca:#FFD23F;--crema:#FFFBF3;--gris:#4A4550;--bg:var(--papel)}
+*{box-sizing:border-box;min-width:0}
+html,body{margin:0}
+body{background:var(--bg);color:var(--tinta);font:16px/1.5 "DM Sans",system-ui,sans-serif;overflow-x:clip;transition:background .3s}
+body.dark{--bg:var(--tinta);color:var(--crema)}
+main{max-width:440px;margin:0 auto;padding:32px 22px 40px;min-height:100svh}
+body.dark main{padding-bottom:110px}
+.stick{position:fixed;left:0;right:0;bottom:0;z-index:5;padding:18px 22px calc(12px + env(safe-area-inset-bottom));background:linear-gradient(rgba(21,18,26,0),var(--tinta) 40%)}
+.stick .btn{max-width:396px;margin:0 auto;box-shadow:0 6px 20px rgba(0,0,0,.35)}
+.scr{display:none}.scr.on{display:block;animation:in .35s ease}
+@keyframes in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){.scr.on{animation:none}body{transition:none}}
+.brand{font-weight:700;font-size:13px;letter-spacing:3px;margin-bottom:24px}
+.brand b{color:var(--rosa)}.dark .brand b{color:var(--marca)}
+h1,h2,.h{font-family:"Bricolage Grotesque",system-ui,sans-serif;font-weight:800;line-height:1;letter-spacing:-.02em;margin:0;text-wrap:balance}
+h1{font-size:clamp(30px,8.4vw,36px)}h2{font-size:clamp(26px,7.4vw,32px)}
+label.in{display:block;border:2.5px solid var(--tinta);border-radius:16px;padding:12px 16px;background:var(--crema);margin-top:14px}
+label.in b{display:block;font-size:15px}.help{display:block;font-size:13px;color:var(--gris);margin:6px 2px 0}
+.money input::placeholder{color:var(--tinta);opacity:.28}
+.money{display:flex;align-items:baseline;gap:6px;font-family:"Bricolage Grotesque",sans-serif;font-weight:800;font-size:30px;margin-top:4px}
+.money input{border:0;background:transparent;font:inherit;color:inherit;width:100%;padding:0;outline:none}
+label.in:focus-within{outline:3px solid var(--rosa);outline-offset:2px}
+.err{color:var(--rosa);font-weight:700;font-size:14px;min-height:20px;margin-top:8px}
+.btn{display:block;width:100%;min-height:52px;border:0;border-radius:16px;background:var(--rosa);color:var(--crema);font:700 17px "DM Sans",sans-serif;text-align:center;padding:15px;margin-top:14px;cursor:pointer;text-decoration:none}
+.btn.out{background:transparent;color:inherit;border:2.5px solid currentColor}
+.btn:focus-visible,.chip:focus-visible,.lnk:focus-visible{outline:3px solid var(--marca);outline-offset:3px}
+.sm{font-size:13px;color:var(--gris);line-height:1.4;margin:10px 0 0}
+.dark .sm{color:#CFC8D6}
+.lnk{background:none;border:0;padding:0;font:inherit;color:inherit;text-decoration:underline;cursor:pointer}
+.kick{font-size:14px;font-weight:700;letter-spacing:2px;color:var(--marca)}
+.big{font-size:clamp(88px,30vw,128px);margin:10px 0 0;display:inline-block;background:var(--marca);color:var(--tinta);padding:4px 14px 0;border-radius:12px}
+.unit{font-size:40px;margin-top:4px}
+.bar{display:flex;gap:5px;margin-top:26px}.seg{flex:1;height:26px;border-radius:6px;background:rgba(255,251,243,.18);overflow:hidden}.seg i{display:block;height:100%;background:var(--rosa)}
+.ticks{display:flex;justify-content:space-between;font-size:13px;color:#CFC8D6;margin-top:6px}
+.brk{margin:6px 0 0 50%;height:10px;border:2px solid var(--marca);border-top:0}
+.ref{font-size:13px;color:var(--marca);font-weight:700;margin-top:10px;text-align:center}
+.ref a{color:inherit}
+.tit{font-size:26px;margin-top:24px}
+.card{display:block;width:100%;aspect-ratio:4/5;border-radius:16px;border:2px solid rgba(255,251,243,.22);background:#15121A;-webkit-touch-callout:default;-webkit-user-select:auto;user-select:auto}
+.hint{font-size:13px;color:#CFC8D6;margin:8px 0 0;text-align:center;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.txt{font-size:16px;margin:10px 0 0;font-weight:500}
+.pslq{font-size:16px;margin:10px 0 0}.pslq b{color:var(--marca)}
+.close{font-size:26px;color:var(--rosa);margin-top:22px}
+fieldset{border:0;padding:0;margin:20px 0 0}legend{font-weight:700;font-size:15px;padding:0;margin-bottom:8px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{min-height:44px;padding:10px 14px;border-radius:999px;border:2px solid var(--tinta);background:var(--crema);font:500 15px "DM Sans",sans-serif;color:var(--tinta);cursor:pointer}
+.chip[aria-pressed=true]{background:var(--tinta);color:var(--crema)}
+.note{font-size:13px;color:var(--gris);margin:8px 0 0}
+.read{margin-top:22px;border-radius:16px;background:var(--tinta);color:var(--crema);padding:16px 18px}
+.read .h{font-size:22px}.read p{margin:6px 0 0;font-size:15px}.read mark{background:var(--marca);color:var(--tinta);padding:0 6px;border-radius:6px}
+.modal{position:fixed;inset:0;background:rgba(21,18,26,.72);display:none;align-items:flex-end;justify-content:center;z-index:9;padding:12px}
+.modal.on{display:flex}
+.sheet{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;background:var(--papel);color:var(--tinta);border-radius:22px;padding:22px;max-width:440px;width:100%;max-height:92svh;overflow:auto}
+.sheet h3{font:800 22px/1.05 "Bricolage Grotesque",sans-serif;margin:0 0 10px}
+.bubble{-webkit-user-select:text;user-select:text;-webkit-touch-callout:default;background:#DCF8C6;border-radius:14px 14px 4px 14px;padding:12px 14px;font-size:15px;white-space:pre-line;margin-top:12px}
+.sheet img{width:100%;border-radius:12px;display:block;margin-top:12px;-webkit-touch-callout:default;-webkit-user-select:auto;user-select:auto;pointer-events:auto}
+.aviso{background:var(--marca);color:var(--tinta);border-radius:14px;padding:14px 16px;margin-top:12px;font-size:15px}
+.aviso b{display:block;font-size:16px;margin-bottom:4px}.aviso ol{margin:6px 0 0;padding-left:20px}.aviso li{margin-top:4px}
+.linkbox{-webkit-user-select:text;user-select:text;-webkit-touch-callout:default;width:100%;margin-top:10px;font:500 14px "DM Sans",sans-serif;padding:10px;border:2px solid var(--tinta);border-radius:10px;background:var(--crema);color:var(--tinta)}
+</style>
+</head>
+<body>
+<main>
+<section class="scr on" id="s1" aria-labelledby="t1">
+  <div class="brand"><b>¿</b>QUÉ TAL QUE</div>
+  <h1 id="t1">¿Cuántos meses aguantaría tu familia si hoy faltara un ingreso?</h1>
+  <form id="f" novalidate>
+    <label class="in" for="ah"><b>Lo que tienes ahorrado y puedes usar ya</b>
+      <span class="money">$<input id="ah" inputmode="numeric" autocomplete="off" placeholder="Ej. 45,000" aria-describedby="h1 e1"></span></label>
+    <span class="help" id="h1">Solo lo que podrías sacar mañana sin penalización.</span>
+    <label class="in" for="ga"><b>Tu gasto básico al mes</b>
+      <span class="money">$<input id="ga" inputmode="numeric" autocomplete="off" placeholder="Ej. 18,000" aria-describedby="h2 e1"></span></label>
+    <span class="help" id="h2">Renta, comida, servicios, transporte y deudas.</span>
+    <div class="err" id="e1" role="alert"></div>
+    <button class="btn" type="submit">Calcular</button>
+  </form>
+  <p class="sm">La cuenta supone que mientras tanto no entra otro ingreso.</p>
+  <p class="sm">Todo se calcula en tu teléfono. No pedimos tu nombre ni tu teléfono, ni guardamos tus cifras: solo contamos resultados, sin saber de quién son. <button class="lnk" data-open="mp">Aviso de privacidad</button></p>
+</section>
+
+<section class="scr" id="s2" aria-labelledby="t2">
+  <div class="brand"><b>¿</b>QUÉ TAL QUE</div>
+  <h2 class="vh" id="t2">Tu resultado</h2>
+  <img class="card" id="card" alt="Tu nivel de colchón">
+  <p class="hint" id="hint">Mantén presionada la imagen para guardarla.</p>
+  <div class="ref">Referencia: entre 3 y 6 meses de gastos · <a href="https://www.gob.mx/cms/uploads/attachment/file/838788/AHORRO2023.pdf" target="_blank" rel="noopener">CONDUSEF</a></div>
+  <h2 class="tit" id="rt"></h2>
+  <p class="txt" id="rx"></p>
+  <p class="pslq" id="rd"></p>
+  <div class="h close">Preocuparse no suma. Ocuparse, sí.</div>
+  <button class="btn js-wa" id="wa2">Platícalo por WhatsApp</button>
+  <button class="btn out js-share">Compartir mi nivel</button>
+  <p class="sm"><button class="lnk" id="go3">Afina tu resultado (opcional)</button> · <button class="lnk" id="back1">Cambiar mis cifras</button></p>
+</section>
+
+<section class="scr" id="s3" aria-labelledby="t3">
+  <div class="brand"><b>¿</b>QUÉ TAL QUE</div>
+  <h2 id="t3">Ocúpate de esto, sin prisa.</h2>
+  <p class="sm" style="font-size:15px">Para afinar tu lectura (opcional). Toca otra vez para quitar.</p>
+  <fieldset><legend>¿Alguien depende económicamente de ti?</legend>
+    <div class="chips" data-k="dep"><button class="chip" data-v="si">Sí</button><button class="chip" data-v="no">No</button></div>
+    <p class="note">CONDUSEF sugiere tomar en cuenta si alguien depende económicamente de ti al definir tu fondo.</p></fieldset>
+  <fieldset><legend>Tu ingreso es…</legend>
+    <div class="chips" data-k="ing"><button class="chip" data-v="fijo">Fijo</button><button class="chip" data-v="variable">Variable</button></div>
+    <p class="note">Si tu ingreso es variable, te sugerimos apuntar a 6 meses: los meses flacos llegan sin avisar.</p></fieldset>
+  <fieldset><legend>Tu edad</legend>
+    <div class="chips" data-k="edad"><button class="chip" data-v="18–29">18–29</button><button class="chip" data-v="30–39">30–39</button><button class="chip" data-v="40–49">40–49</button><button class="chip" data-v="50+">50+</button></div></fieldset>
+  <fieldset><legend>Tu ocupación</legend>
+    <div class="chips" data-k="ocu"><button class="chip" data-v="empleado con prestaciones">Empleado con prestaciones</button><button class="chip" data-v="independiente o freelance">Independiente o freelance</button><button class="chip" data-v="dueño de negocio">Dueño de negocio</button><button class="chip" data-v="otra ocupación">Otro</button></div></fieldset>
+  <div class="read" id="read" aria-live="polite"></div>
+  <button class="btn" id="cont">Continuar a WhatsApp</button>
+  <button class="btn out" id="saltar">Saltar</button>
+  <p class="sm">Si lo mandas, tú decides qué compartir. <button class="lnk" data-open="mp">Aviso de privacidad</button></p>
+  <p class="sm"><button class="lnk js-share">Compartir mi nivel</button> · <button class="lnk" id="back2">Ver mi resultado</button></p>
+</section>
+</main>
+<div class="stick" id="stick" hidden><button class="btn js-wa">Platícalo por WhatsApp</button></div>
+
+<div class="modal" id="mw" role="dialog" aria-modal="true" aria-labelledby="mwt"><div class="sheet">
+  <h3 id="mwt">Antes de abrir WhatsApp</h3>
+  <p style="margin:0">Vas a abrir WhatsApp con un mensaje ya escrito para Qué Tal Que. Tu teléfono puede preguntarte si quieres abrirlo. Puedes cambiar el mensaje o no mandarlo. Solo nos llega si tú lo envías.</p>
+  <div class="bubble" id="msg"></div>
+  <div class="aviso" id="copiado" hidden></div>
+  <a class="btn" id="walink" href="#" target="_blank" rel="noopener">Abrir WhatsApp</a>
+  <button class="btn out" data-close>Mejor no</button>
+</div></div>
+
+<div class="modal" id="mi" role="dialog" aria-modal="true" aria-labelledby="mit"><div class="sheet">
+  <h3 id="mit">Para guardar tu imagen, abre esta página en el navegador de tu teléfono.</h3>
+  <p style="margin:0">Dentro de <span id="app">esta app</span> el teléfono no deja guardar ni compartir imágenes de una página.</p>
+  <div class="aviso"><ol id="pasos"></ol>
+    <button class="btn" id="copiar" style="background:var(--tinta)">Copiar el enlace con tu resultado</button>
+    <input class="linkbox" id="enlace" readonly aria-label="Enlace con tu resultado"></div>
+  <button class="btn out" data-close>Listo</button>
+</div></div>
+
+<div class="modal" id="mp" role="dialog" aria-modal="true" aria-labelledby="mpt"><div class="sheet">
+  <h3 id="mpt">Tu información, con cuidado.</h3>
+  <p>Esta calculadora hace la cuenta en tu teléfono. No te pide nombre ni teléfono y no guarda tus cifras: solo cuenta resultados, sin saber de quién son. De cada resultado se anota la fecha, el rango de meses (por ejemplo, «1 a 3»), de qué red llegaste y lo que marques en «Afina tu resultado». Nunca tus pesos.</p>
+  <p>Si decides escribirme por WhatsApp, yo, Juan Luis Rodríguez Salazar, uso solo lo que tú me compartas para platicar contigo y darte seguimiento. No lo vendo ni lo comparto. Puedes pedirme que lo borre o que deje de contactarte en rodsal.asesoria@gmail.com.</p>
+  <button class="btn" data-close>Entendido</button>
+</div></div>
+
+<canvas id="cv" width="1080" height="1350" hidden></canvas>
+<script>
+{
+const $=s=>document.querySelector(s);
+const WA='525644131084';
+// Pega aquí la URL de la app web del script de Google (termina en /exec). Vacío = no cuenta nada.
+const CONTEO='https://script.google.com/macros/s/AKfycbzG0-wJk9hM91wGnR2NA2Q5GG4AVTB8LZohFyErsbfPZrgvXfdT9sxMIk9HnIe1uJYi/exec';
+// Salida de respaldo para WhatsApp: APAGADA. Cambia false por true SOLO en la app donde la prueba
+// mostró la dirección completa en lugar de abrir WhatsApp con el mensaje.
+// Con true: WhatsApp se abre sin texto y el mensaje se copia para que la persona lo pegue.
+const RESPALDO={tiktok:false,instagram:false,youtube:false};
+let rid='',tq=null;
+const rango=m=>m<1?'<1':m<3?'1-3':m<6?'3-6':'6+';
+const nivel=m=>m<1?'Almohadita':m<3?'Colchón inflable':m<6?'Colchón matrimonial':'King size';
+function contar(){
+  if(!CONTEO||!rid)return;
+  const body=JSON.stringify({id:rid,rango:rango(st.m),nivel:nivel(st.m),red:red||'web',pieza:ori,dep:st.dep,ing:st.ing,edad:st.edad,ocu:st.ocu,wa:st.wa});
+  try{fetch(CONTEO,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body,keepalive:true}).catch(()=>{})}catch(e){}
+}
+const contarLuego=()=>{clearTimeout(tq);tq=setTimeout(contar,1500)};
+const SRC='https://www.gob.mx/cms/uploads/attachment/file/838788/AHORRO2023.pdf';
+const st={m:0,dep:'',ing:'',edad:'',ocu:'',wa:'no'};
+const q=new URLSearchParams(location.search),h=location.hash;
+let red=(q.get('red')||(h.match(/red-(tt|ig|yt)/)||[])[1]||'').toLowerCase();
+if(!/^(tt|ig|yt)$/.test(red))red='';
+let ori=(q.get('o')||(h.match(/o-(p\d{1,3})/)||[])[1]||'').toLowerCase();
+if(!/^p\d{1,3}$/.test(ori))ori='';
+const ua=navigator.userAgent||'',ios=/iPhone|iPad|iPod/.test(ua)||(/Macintosh/.test(ua)&&navigator.maxTouchPoints>1);
+const app=/Instagram/i.test(ua)?'Instagram':/musical_ly|Bytedance|TikTok/i.test(ua)?'TikTok':/FBAN|FBAV|FB_IAB/.test(ua)?'Facebook':/; wv\)/.test(ua)?'esta app':'';
+
+const num=v=>Number(String(v).replace(/\D/g,''))||0;
+for(const id of['ah','ga']){const el=$('#'+id);el.addEventListener('input',()=>{const d=el.value.replace(/\D/g,'').slice(0,11);el.value=d?Number(d).toLocaleString('es-MX'):''})}
+const fmt=m=>{const f=Math.floor(m*10)/10;if(f>=100)return'99+';return Number.isInteger(f)?String(f):f.toFixed(1)};
+const meses=m=>fmt(m)==='1'?'mes':'meses';
+const meta=()=>(st.dep==='si'||st.ing==='variable')?6:3;
+
+function lectura(){
+  const m=st.m,X=fmt(m),M=meta(),u=meses(m);
+  if(m<1)return{t:'Qué tal que tu colchón hoy es almohadita.',x:'Tu ahorro cubre menos de un mes de gastos básicos. Saberlo ya es empezar.',d:'tu primera meta es juntar un mes.'};
+  if(m<3)return{t:'Ya hay colchón. Falta engordarlo.',x:`Cubres ${X} ${u}. Vas en camino a la referencia.`,d:'tu siguiente meta son 3 meses.'};
+  if(m<6)return{t:'Estás dentro de la referencia de CONDUSEF.',x:`Cubres ${X} meses. Ahora toca cuidarlo para no usarlo en lo que no es emergencia.`,d:M===6?`por lo que marcaste, tu meta son 6 meses: te faltan ${fmt(6-m)}.`:'revisa si alcanza también para quien depende de ti.'};
+  return{t:'Tu colchón ya pasa la referencia.',x:`Cubres ${X} meses. Bien hecho.`,d:'el ahorro aguanta meses; lo que puede durar años se planea distinto.'};
+}
+function pintar(){
+  const L=lectura();
+  $('#rt').textContent=L.t;$('#rx').textContent=L.x;
+  $('#rd').innerHTML='<b>Por si las dudas…</b> '+L.d;
+  const M=meta(),falta=M-st.m;
+  $('#read').innerHTML=`<div class="h">Tu meta: <mark>${M} meses</mark></div><p>`+
+    (falta>0?`Hoy cubres ${fmt(st.m)} ${meses(st.m)}: te faltan ${fmt(falta)} para llegar.`:`Hoy cubres ${fmt(st.m)} ${meses(st.m)}: ya pasaste tu meta.`)+
+    (M===6?' Con dependientes o ingreso variable, apuntamos al extremo alto de la referencia.':' Es el inicio de la referencia de CONDUSEF.')+'</p>';
+}
+let pant=1,waVisible=true;
+const barra=()=>{$('#stick').hidden=!(pant===2&&!waVisible)};
+function ver(n){pant=n;barra();document.querySelectorAll('.scr').forEach(s=>s.classList.toggle('on',s.id==='s'+n));document.body.classList.toggle('dark',n===2);scrollTo(0,0);const t=$('#s'+n+' h1, #s'+n+' h2, #s'+n+' .kick');t&&t.focus&&t.setAttribute('tabindex','-1');t&&t.focus({preventScroll:true})}
+
+$('#f').addEventListener('submit',e=>{e.preventDefault();
+  const a=num($('#ah').value),g=num($('#ga').value);
+  if(!$('#ga').value||g<=0){$('#e1').textContent='Escribe tu gasto básico al mes (mayor a cero).';$('#ga').focus();return}
+  if(!$('#ah').value){$('#e1').textContent='Escribe lo que tienes ahorrado. Si hoy es cero, pon 0.';$('#ah').focus();return}
+  $('#e1').textContent='';st.m=a/g;st.wa='no';pintar();tarjeta();ver(2);
+  rid=Array.from(crypto.getRandomValues(new Uint8Array(6)),b=>b.toString(16).padStart(2,'0')).join('');contar()});
+$('#go3').onclick=()=>ver(3);$('#back1').onclick=()=>ver(1);$('#back2').onclick=()=>{pintar();ver(2)};
+
+document.querySelectorAll('.chips').forEach(g=>g.addEventListener('click',e=>{const b=e.target.closest('.chip');if(!b)return;
+  const k=g.dataset.k,v=b.dataset.v;st[k]=st[k]===v?'':v;
+  g.querySelectorAll('.chip').forEach(c=>c.setAttribute('aria-pressed',c.dataset.v===st[k]));pintar();contarLuego()}));
+document.querySelectorAll('.chip').forEach(c=>c.setAttribute('aria-pressed','false'));
+
+function mensaje(){
+  const X=fmt(st.m),M=meta(),u=meses(st.m);
+  let t=st.m<M?`Hola, hice la calculadora de Qué Tal Que: mi familia aguantaría ${X} ${u} (mi meta es ${M}). ¿Por dónde empiezo para llegar?`
+             :`Hola, hice la calculadora de Qué Tal Que: mi familia aguantaría ${X} ${u} (ya pasé mi meta de ${M}). ¿Qué me conviene revisar ahora?`;
+  const d=[];
+  if(st.dep)d.push(st.dep==='si'?'tengo dependientes':'sin dependientes');
+  if(st.ing)d.push('ingreso '+st.ing);
+  if(st.edad)d.push(st.edad+' años');
+  if(st.ocu)d.push(st.ocu);
+  if(d.length)t+=`\nSobre mí: ${d.join(', ')}.`;
+  t+=`\n(ref: ${[red||'web',ori].filter(Boolean).join(' · ')})`;
+  return t;
+}
+const abrir=id=>{$(id).classList.add('on');const b=$(id+' .btn');b&&b.focus()};
+document.querySelectorAll('[data-open]').forEach(b=>b.onclick=()=>abrir('#'+b.dataset.open));
+document.querySelectorAll('.modal').forEach(m=>{m.addEventListener('click',e=>{if(e.target===m||e.target.closest('[data-close]'))m.classList.remove('on')})});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')document.querySelectorAll('.modal.on').forEach(m=>m.classList.remove('on'))});
+// «Platícalo por WhatsApp»: la primera vez pasa por «Afina tu resultado»; después va directo al aviso.
+let afinado=false;
+// TikTok e Instagram se reconocen por su navegador interno; YouTube abre el navegador normal, así que se reconoce por el link de su bio (?red=yt).
+const respaldo=()=>(app==='TikTok'&&RESPALDO.tiktok)||(app==='Instagram'&&RESPALDO.instagram)||(red==='yt'&&RESPALDO.youtube);
+function copiarTexto(t){
+  try{if(navigator.clipboard&&navigator.clipboard.writeText){return navigator.clipboard.writeText(t).then(()=>true,()=>copiarViejo(t))}}catch(e){}
+  return Promise.resolve(copiarViejo(t));
+}
+function copiarViejo(t){try{const a=document.createElement('textarea');a.value=t;a.setAttribute('readonly','');a.style.cssText='position:fixed;top:0;left:0;opacity:0';document.body.appendChild(a);a.select();a.setSelectionRange(0,t.length);const ok=document.execCommand('copy');a.remove();return ok}catch(e){return false}}
+function abrirWhatsApp(){const t=mensaje();$('#msg').textContent=t;
+  if(respaldo()){
+    $('#walink').href=`https://wa.me/${WA}`;$('#copiado').hidden=false;$('#copiado').textContent='Copiando tu mensaje…';
+    copiarTexto(t).then(ok=>{$('#copiado').innerHTML=ok?'<b>Ya copiamos tu mensaje: solo pégalo en el chat.</b>':'<b>No pudimos copiar tu mensaje.</b> Mantén presionado el texto verde de arriba, elige «Copiar» y pégalo en el chat.'});
+  }else{$('#walink').href=`https://wa.me/${WA}?text=${encodeURIComponent(t)}`;$('#copiado').hidden=true}
+  abrir('#mw')}
+document.querySelectorAll('.js-wa').forEach(b=>b.onclick=()=>{
+  if(st.wa!=='si'){st.wa='si';clearTimeout(tq);contar()}
+  if(afinado)abrirWhatsApp();else ver(3)});
+$('#cont').onclick=$('#saltar').onclick=()=>{afinado=true;clearTimeout(tq);contar();abrirWhatsApp()};
+if('IntersectionObserver' in window){const io=new IntersectionObserver(e=>{waVisible=e[0].isIntersecting;barra()});io.observe($('#wa2'))}
+$('#walink').addEventListener('click',()=>{if(respaldo())copiarTexto($('#msg').textContent)});
+$('#walink').addEventListener('click',()=>setTimeout(()=>$('#mw').classList.remove('on'),300));
+
+function wrap(c,text,x,y,maxW,lh){const w=text.split(' ');let line='';for(const p of w){const tt=line?line+' '+p:p;if(c.measureText(tt).width>maxW&&line){c.fillText(line,x,y);y+=lh;line=p}else line=tt}c.fillText(line,x,y);return y+lh}
+async function imagen(){
+  try{await Promise.all(['800 120px "Bricolage Grotesque"','500 40px "DM Sans"','700 30px "DM Sans"'].map(f=>document.fonts.load(f)))}catch(e){}
+  const cv=$('#cv'),c=cv.getContext('2d'),W=1080,H=1350,P=90,MW=W-2*P,BR='"Bricolage Grotesque",sans-serif',DM='"DM Sans",sans-serif';
+  c.textBaseline='alphabetic';c.textAlign='left';
+  c.fillStyle='#15121A';c.fillRect(0,0,W,H);
+  // Nivel: palabras en líneas que quepan; tamaño automático
+  const palabras=nivel(st.m).split(' ');let fs=190,lineas;
+  const partir=()=>{const L=[];let l='';for(const w of palabras){const t=l?l+' '+w:w;if(c.measureText(t).width>MW-48&&l){L.push(l);l=w}else l=t}L.push(l);return L};
+  do{c.font=`800 ${fs}px ${BR}`;lineas=partir();fs-=6}while((lineas.some(l=>c.measureText(l).width>MW-48)||lineas.length*fs*1.08>520)&&fs>70);
+  fs+=6;c.font=`800 ${fs}px ${BR}`;
+  const lh=Math.round(fs*1.12),bloque=84+lineas.length*lh+30+56+60+100+170;
+  let y=Math.max(110,120+(1080-bloque)/2);
+  c.fillStyle='#FFFBF3';c.font=`700 60px ${DM}`;c.fillText('Mi colchón:',P,y+50);y+=84;
+  c.font=`800 ${fs}px ${BR}`;
+  for(const l of lineas){const w=c.measureText(l).width;
+    c.fillStyle='#FFD23F';c.beginPath();c.roundRect(P,y,w+48,lh-14,20);c.fill();
+    c.fillStyle='#15121A';c.fillText(l,P+24,y+fs*0.86);y+=lh}
+  y+=30;const sw=(MW-5*12)/6;
+  for(let i=0;i<6;i++){const x=P+i*(sw+12);c.fillStyle='rgba(255,251,243,.18)';c.beginPath();c.roundRect(x,y,sw,56,12);c.fill();
+    const f=Math.max(0,Math.min(1,st.m-i));if(f){c.save();c.beginPath();c.roundRect(x,y,sw,56,12);c.clip();c.fillStyle='#D4006A';c.fillRect(x,y,sw*f,56);c.restore()}}
+  y+=56;c.fillStyle='#CFC8D6';c.font=`500 28px ${DM}`;c.fillText('0',P,y+40);c.textAlign='center';c.fillText('3',P+3*(sw+12)-6,y+40);c.textAlign='right';c.fillText('6+ meses',W-P,y+40);c.textAlign='left';
+  y+=60;c.fillStyle='#FFFBF3';c.font=`500 44px ${DM}`;const X=fmt(st.m);
+  c.fillText(`Mi dinero aguanta ${X} ${meses(st.m)}.`,P,y+50);y+=150;
+  c.font=`800 76px ${BR}`;c.fillStyle='#D4006A';y=wrap(c,'¿Y el tuyo de qué tamaño es?',P,y,MW,82);
+  c.fillStyle='#FFFBF3';c.font=`700 34px ${DM}`;c.fillText('Calcula el tuyo: link en la bio de @quetalque.mx',P,1240);
+  c.fillStyle='#CFC8D6';c.font=`500 24px ${DM}`;c.fillText('Contenido educativo, no es una oferta.',P,1290);
+  return new Promise(r=>cv.toBlob(r,'image/png'));
+}
+let blob=null,dataUrl='';
+function enlaceResultado(){
+  const u=new URL(location.href.split('#')[0]);u.search='';
+  if(red)u.searchParams.set('red',red);if(ori)u.searchParams.set('o',ori);
+  u.searchParams.set('r',fmt(st.m).replace('+',''));if(st.dep)u.searchParams.set('dep',st.dep);if(st.ing)u.searchParams.set('ing',st.ing);
+  return u.toString();
+}
+async function tarjeta(){
+  blob=await imagen();dataUrl=$('#cv').toDataURL('image/png');
+  $('#card').src=dataUrl;$('#card').alt=`Mi colchón: ${nivel(st.m)}. Mi dinero aguanta ${fmt(st.m)} ${meses(st.m)}.`;
+  $('#hint').textContent=app?'Para guardarla, toca «Compartir mi nivel».':'Mantén presionada la imagen para guardarla.';
+}
+function avisoApp(){
+  $('#app').textContent=app==='esta app'?'esta app':app;
+  const p=ios
+    ?['Toca los tres puntos (•••) de arriba a la derecha.','Elige «Abrir en el navegador externo» o «Abrir en Safari».','Ahí toca otra vez «Compartir mi nivel».']
+    :['Toca los tres puntos (⋮) de arriba a la derecha.','Elige «Abrir en el navegador» o «Abrir en Chrome».','Ahí toca otra vez «Compartir mi nivel».'];
+  $('#pasos').innerHTML=p.map(t=>`<li>${t}</li>`).join('')+'<li>Si no ves esa opción, copia el enlace de abajo y pégalo en '+(ios?'Safari':'Chrome')+'. Tu resultado se abre solo.</li>';
+  $('#enlace').value=enlaceResultado();$('#copiar').textContent='Copiar el enlace con tu resultado';
+  abrir('#mi');
+}
+$('#copiar').onclick=async()=>{const v=$('#enlace').value;
+  try{await navigator.clipboard.writeText(v);$('#copiar').textContent='Enlace copiado ✓';return}catch(e){}
+  const i=$('#enlace');i.focus();i.select();i.setSelectionRange(0,v.length);
+  try{document.execCommand('copy');$('#copiar').textContent='Enlace copiado ✓'}catch(e){$('#copiar').textContent='Mantén presionado el enlace y elige Copiar'}};
+async function compartir(){
+  if(app){avisoApp();return}
+  if(!blob)await tarjeta();
+  const file=new File([blob],'mi-nivel-quetalque.png',{type:'image/png'});
+  if(navigator.canShare&&navigator.canShare({files:[file]})){
+    try{await navigator.share({files:[file]});return}catch(e){if(e.name==='AbortError')return}}
+  const a=document.createElement('a');a.href=dataUrl;a.download=file.name;document.body.appendChild(a);a.click();a.remove();
+  $('#hint').textContent='Si no se descargó, mantén presionada la imagen y elige «Guardar imagen».';
+}
+document.querySelectorAll('.js-share').forEach(b=>b.onclick=compartir);
+// Llega con un resultado en el enlace (copiado desde TikTok o Instagram): lo muestra sin volver a contar.
+{const r=parseFloat(q.get('r'));if(r>=0&&r<1000){st.m=r;const d=q.get('dep'),g=q.get('ing');
+  if(d==='si'||d==='no')st.dep=d;if(g==='fijo'||g==='variable')st.ing=g;
+  document.querySelectorAll('.chips').forEach(c=>c.querySelectorAll('.chip').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===st[c.dataset.k])));
+  pintar();tarjeta();ver(2)}}
+}
+</script>
+</body>
+</html>
